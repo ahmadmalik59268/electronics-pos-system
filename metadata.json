@@ -1,0 +1,8 @@
+{
+  "name": "Zohaib Dogar Electronics",
+  "description": "Complete, production-ready Zohaib Dogar Electronics POS & Installment (Qist) Management System with inventory tracking, payment schedules, overdue alerts, profit analysis, reports, and Supabase integration.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
