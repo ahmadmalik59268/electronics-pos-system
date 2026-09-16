@@ -1071,17 +1071,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteCustomer = async (id: string) => {
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
+    let deletedName = '';
+    setCustomers((prev) => {
+      const target = prev.find((c) => c.id === id);
+      if (target) {
+        deletedName = target.name || target.full_name || 'Customer';
+      }
+      const updated = prev.filter((c) => c.id !== id);
+      saveToStorage(STORAGE_KEYS.CUSTOMERS, updated);
+      return updated;
+    });
+
     const supabase = getSupabase();
     if (supabase) {
+      try {
+        // Nullify foreign key references in related tables first so delete won't fail
+        await supabase.from('contracts').update({ customer_id: null }).eq('customer_id', id);
+        await supabase.from('installment_contracts').update({ customer_id: null }).eq('customer_id', id);
+        await supabase.from('sales').update({ customer_id: null }).eq('customer_id', id);
+        await supabase.from('payments').update({ customer_id: null }).eq('customer_id', id);
+      } catch (err) {
+        console.warn('Decoupled linked foreign keys before deleting customer:', err);
+      }
+
       const { error } = await supabase.from('customers').delete().eq('id', id);
       if (error) {
         addToast('error', `Supabase Delete Error: ${error.message}`, 'Delete Failed');
       } else {
-        addToast('info', 'Customer removed from Supabase database.');
+        addToast('success', `${deletedName || 'Customer'} permanently deleted.`);
       }
     } else {
-      addToast('info', 'Customer removed.');
+      addToast('success', `${deletedName || 'Customer'} deleted successfully.`);
     }
   };
 

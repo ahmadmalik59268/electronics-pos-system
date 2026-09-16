@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Electronics POS &amp; Qist Manager</string>
+    <string name="title_activity_main">Electronics POS &amp; Qist Manager</string>
+    <string name="package_name">com.electronicspos.qistmanager</string>
+    <string name="custom_url_scheme">com.electronicspos.qistmanager</string>
+</resources>

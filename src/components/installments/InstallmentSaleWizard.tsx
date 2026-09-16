@@ -937,45 +937,95 @@ export const InstallmentSaleWizard: React.FC = () => {
           </div>
 
           {/* Duration & Installment Period Selector */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-2">
-            <div>
-              <label className="font-bold text-slate-700 dark:text-slate-300">Duration Frequency</label>
-              <select
-                value={durationType}
-                onChange={(e) => setDurationType(e.target.value as any)}
-                className="w-full mt-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-900 dark:text-white"
-              >
-                <option value="monthly">Monthly Installments</option>
-                <option value="weekly">Weekly Installments</option>
-                <option value="custom">Custom Term</option>
-              </select>
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Duration Frequency</label>
+                <select
+                  value={durationType}
+                  onChange={(e) => setDurationType(e.target.value as any)}
+                  className="w-full mt-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-900 dark:text-white"
+                >
+                  <option value="monthly">Monthly Installments (ماہانہ قسط)</option>
+                  <option value="weekly">Weekly Installments (ہفتہ وار قسط)</option>
+                  <option value="custom">Custom Term / Days (کسٹم مدت)</option>
+                </select>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-slate-700 dark:text-slate-300">
+                    {durationType === 'weekly' ? 'Number of Weeks' : 'Number of Months (قسط کے مہینے)'} *
+                  </label>
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
+                    Custom Duration
+                  </span>
+                </div>
+                <div className="mt-1.5 relative">
+                  <input
+                    type="number"
+                    min="1"
+                    max="120"
+                    value={durationMonths || ''}
+                    onChange={(e) => setDurationMonths(Math.max(1, parseInt(e.target.value) || 1))}
+                    placeholder="Enter custom months e.g. 5, 7, 10, 15"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 font-bold text-slate-900 dark:text-white text-base focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
+                    {durationType === 'weekly' ? 'Weeks' : 'Months'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300">Agreement Start Date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full mt-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-slate-900 dark:text-white"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="font-bold text-slate-700 dark:text-slate-300">Number of Installments (Months)</label>
-              <select
-                value={durationMonths}
-                onChange={(e) => setDurationMonths(parseInt(e.target.value) || 1)}
-                className="w-full mt-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white"
-              >
-                <option value={3}>3 Months</option>
-                <option value={6}>6 Months</option>
-                <option value={8}>8 Months</option>
-                <option value={10}>10 Months (Standard)</option>
-                <option value={12}>12 Months (1 Year)</option>
-                <option value={18}>18 Months</option>
-                <option value={24}>24 Months (2 Years)</option>
-              </select>
-            </div>
+            {/* Quick Presets & Custom Target Monthly Amount Helper */}
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-slate-500 font-semibold mr-1">Quick Months:</span>
+                {[1, 2, 3, 4, 6, 8, 10, 12, 15, 18, 24].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setDurationMonths(m)}
+                    className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-all ${
+                      durationMonths === m
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400'
+                    }`}
+                  >
+                    {m}m
+                  </button>
+                ))}
+              </div>
 
-            <div>
-              <label className="font-bold text-slate-700 dark:text-slate-300">Agreement Start Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full mt-1.5 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-slate-900 dark:text-white"
-              />
+              {/* Target Monthly Amount Helper */}
+              {remainingBalance > 0 && (
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className="text-[11px] text-slate-500 whitespace-nowrap">Target Qist (Rs.):</span>
+                  <input
+                    type="number"
+                    placeholder="Custom Rs./mo"
+                    onChange={(e) => {
+                      const targetAmt = parseFloat(e.target.value);
+                      if (targetAmt && targetAmt > 0) {
+                        const calculatedMonths = Math.max(1, Math.round(remainingBalance / targetAmt));
+                        setDurationMonths(calculatedMonths);
+                      }
+                    }}
+                    className="w-28 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 font-bold text-slate-900 dark:text-white text-right"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

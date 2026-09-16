@@ -481,16 +481,46 @@ export const ProductsView: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="font-bold text-indigo-700 dark:text-indigo-400">Qist (Installment) Price (Rs.) *</label>
+                <div className="sm:col-span-3">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-indigo-700 dark:text-indigo-400">
+                      Qist (Installment) Price (Rs.) *
+                    </label>
+                    {formData.installment_price > 0 && (
+                      <span className="text-[11px] text-indigo-600 dark:text-indigo-300 font-semibold">
+                        Custom Qist Calculator Available
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="number"
                     min="0"
                     required
                     value={formData.installment_price || ''}
                     onChange={(e) => setFormData({ ...formData, installment_price: parseFloat(e.target.value) || 0 })}
+                    placeholder="e.g. 85000"
                     className="w-full mt-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-indigo-300 dark:border-indigo-700 font-bold text-slate-900 dark:text-white"
                   />
+
+                  {/* Live Custom Installment Months Breakdown Preview */}
+                  {formData.installment_price > 0 && (
+                    <div className="mt-2 p-2.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 text-[11px] space-y-1.5">
+                      <div className="flex items-center justify-between font-bold text-indigo-950 dark:text-indigo-200">
+                        <span>Qist Breakdown Preview (مختلف مہینوں کی قسط):</span>
+                        <span className="text-slate-500 font-normal">Based on 0% advance</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                        {[3, 6, 10, 12].map((m) => (
+                          <div key={m} className="p-1.5 rounded bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/50 text-center">
+                            <span className="text-slate-500 font-medium">{m} Months:</span>
+                            <p className="font-bold text-indigo-600 dark:text-indigo-400">
+                              {formatCurrency(Math.round(formData.installment_price / m))}/mo
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -10,6 +10,7 @@ import { AuthModal } from './components/auth/AuthModal';
 import { AuthPage } from './components/auth/AuthPage';
 import { AdminUnlockModal } from './components/auth/AdminUnlockModal';
 import { IS_SUPABASE_CONFIGURED } from './lib/supabase';
+import { initCapacitorNativeFeatures, setupAndroidBackButton } from './lib/capacitor';
 import { Tv, RefreshCw } from 'lucide-react';
 
 // Views
@@ -31,9 +32,87 @@ import { EmployeesView } from './components/employees/EmployeesView';
 import { SettingsView } from './components/settings/SettingsView';
 
 const MainLayout: React.FC = () => {
-  const { activeView, currentUser, isAuthenticated, authLoading } = useApp();
+  const {
+    activeView,
+    setActiveView,
+    currentUser,
+    isAuthenticated,
+    authLoading,
+    theme,
+    printModalOpen,
+    setPrintModalOpen,
+    globalSearchOpen,
+    setGlobalSearchOpen,
+    isAdminUnlockOpen,
+    setIsAdminUnlockOpen,
+    addToast,
+  } = useApp();
+
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Initialize native Capacitor Android features (Status Bar, Splash Screen, Keyboard)
+  useEffect(() => {
+    initCapacitorNativeFeatures(theme);
+  }, [theme]);
+
+  // Setup Android Hardware Back Button listener
+  useEffect(() => {
+    const cleanup = setupAndroidBackButton(
+      () => {
+        // 1. Close active modals first
+        if (printModalOpen) {
+          setPrintModalOpen(false);
+          return true;
+        }
+        if (globalSearchOpen) {
+          setGlobalSearchOpen(false);
+          return true;
+        }
+        if (isAdminUnlockOpen) {
+          setIsAdminUnlockOpen(false);
+          return true;
+        }
+        if (authModalOpen) {
+          setAuthModalOpen(false);
+          return true;
+        }
+        if (mobileMenuOpen) {
+          setMobileMenuOpen(false);
+          return true;
+        }
+
+        // 2. Navigate back to home dashboard if inside a sub-screen
+        const defaultHome = currentUser.role === 'admin' ? 'dashboard' : 'employee-dashboard';
+        if (activeView !== defaultHome) {
+          setActiveView(defaultHome);
+          return true;
+        }
+
+        return false;
+      },
+      () => {
+        addToast('info', 'Press back again to exit app', 'Exit App');
+      }
+    );
+
+    return () => {
+      cleanup();
+    };
+  }, [
+    printModalOpen,
+    globalSearchOpen,
+    isAdminUnlockOpen,
+    authModalOpen,
+    mobileMenuOpen,
+    activeView,
+    currentUser.role,
+    setPrintModalOpen,
+    setGlobalSearchOpen,
+    setIsAdminUnlockOpen,
+    setActiveView,
+    addToast,
+  ]);
 
   if (authLoading) {
     return (
